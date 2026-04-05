@@ -2,6 +2,7 @@ import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.stats import weibull_min
+import math
 
 # Page Configuration
 st.set_page_config(page_title="Visualizador de Distribución Weibull", layout="centered")
@@ -46,6 +47,17 @@ reliability = np.exp(-(t / eta)**beta)
 
 # Hazard Rate: lambda(t) = (beta/eta) * (t/eta)**(beta-1)
 hazard_rate = (beta / eta) * (t / eta)**(beta - 1)
+
+# Metrics Calculation
+mttf = eta * math.gamma(1 + 1/beta)
+b10 = eta * (-np.log(0.9))**(1/beta)
+
+st.subheader("Métricas Clave")
+col1, col2, col3 = st.columns(3)
+col1.metric("Vida Característica (η)", f"{eta:.2f}")
+col2.metric("MTTF (Tiempo Medio)", f"{mttf:.2f}")
+col3.metric("Vida B10 (10% Falla)", f"{b10:.2f}")
+st.divider()
 
 # Graphics - Stacked Vertically
 st.subheader("Visualizaciones")
