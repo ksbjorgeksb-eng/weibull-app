@@ -1,6 +1,6 @@
 import streamlit as st
 import numpy as np
-import matplotlib.pyplot as plt
+import plotly.graph_objects as go
 from scipy.stats import weibull_min
 import math
 
@@ -63,41 +63,24 @@ st.divider()
 st.subheader("Visualizaciones")
 
 # 1. PDF
-fig1, ax1 = plt.subplots(figsize=(10, 4))
-ax1.plot(t, pdf, color='blue', lw=2, label=f'$\\eta={eta}, \\beta={beta}$')
-ax1.fill_between(t, pdf, alpha=0.3, color='blue')
-ax1.set_title("Función de Densidad de Probabilidad (PDF) $f(t)$")
-ax1.set_xlabel("Tiempo (t)")
-ax1.set_ylabel("Frecuencia de Falla")
-ax1.grid(True, linestyle="--", alpha=0.7)
-ax1.legend()
-st.pyplot(fig1)
+fig1 = go.Figure()
+fig1.add_trace(go.Scatter(x=t, y=pdf, mode='lines', name=f'η={eta}, β={beta}', fill='tozeroy', line=dict(color='blue')))
+fig1.update_layout(title="Función de Densidad de Probabilidad (PDF) f(t)", xaxis_title="Tiempo (t)", yaxis_title="Frecuencia de Falla")
+st.plotly_chart(fig1, use_container_width=True)
 
 # 2. Reliability
-fig2, ax2 = plt.subplots(figsize=(10, 4))
-ax2.plot(t, reliability, color='green', lw=2, label=f'$\\eta={eta}, \\beta={beta}$')
-ax2.fill_between(t, reliability, alpha=0.3, color='green')
-ax2.set_title("Función de Confiabilidad $R(t)$")
-ax2.set_xlabel("Tiempo (t)")
-ax2.set_ylabel("Probabilidad de Supervivencia")
-ax2.set_ylim(0, 1.05)
-ax2.grid(True, linestyle="--", alpha=0.7)
-ax2.legend()
-st.pyplot(fig2)
+fig2 = go.Figure()
+fig2.add_trace(go.Scatter(x=t, y=reliability, mode='lines', name=f'η={eta}, β={beta}', fill='tozeroy', line=dict(color='green')))
+fig2.update_layout(title="Función de Confiabilidad R(t)", xaxis_title="Tiempo (t)", yaxis_title="Probabilidad de Supervivencia", yaxis=dict(range=[0, 1.05]))
+st.plotly_chart(fig2, use_container_width=True)
 
 # 3. Hazard Rate
-fig3, ax3 = plt.subplots(figsize=(10, 4))
-ax3.plot(t, hazard_rate, color='red', lw=2, label=f'$\\eta={eta}, \\beta={beta}$')
-ax3.fill_between(t, hazard_rate, alpha=0.3, color='red')
-ax3.set_title("Tasa de Falla (Hazard Rate) $\\lambda(t)$")
-ax3.set_xlabel("Tiempo (t)")
-ax3.set_ylabel("Tasa de Falla")
-# Limit y-axis for Hazard Rate if it explodes (beta < 1)
+fig3 = go.Figure()
+fig3.add_trace(go.Scatter(x=t, y=hazard_rate, mode='lines', name=f'η={eta}, β={beta}', fill='tozeroy', line=dict(color='red')))
+fig3.update_layout(title="Tasa de Falla (Hazard Rate) λ(t)", xaxis_title="Tiempo (t)", yaxis_title="Tasa de Falla")
 if beta < 1:
-    ax3.set_ylim(0, hazard_rate[int(len(hazard_rate)*0.1)] * 2) 
-ax3.grid(True, linestyle="--", alpha=0.7)
-ax3.legend()
-st.pyplot(fig3)
+    fig3.update_layout(yaxis=dict(range=[0, hazard_rate[int(len(hazard_rate)*0.1)] * 2]))
+st.plotly_chart(fig3, use_container_width=True)
 
 # Information Section
 st.info(f"""
