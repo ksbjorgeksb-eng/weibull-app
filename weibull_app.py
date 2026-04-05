@@ -3,6 +3,7 @@ import numpy as np
 import plotly.graph_objects as go
 from scipy.stats import weibull_min
 import math
+import pandas as pd
 
 # Page Configuration
 st.set_page_config(page_title="Visualizador de Distribución Weibull", layout="centered")
@@ -14,25 +15,46 @@ Esta aplicación permite visualizar la **Distribución de Weibull**, ampliamente
 """)
 
 # Sidebar for Parameters
-st.sidebar.header("Parámetros de la Distribución")
+st.sidebar.header("Configuración de Datos")
 
-eta = st.sidebar.slider(
-    "Escala ($\eta$ - Vida Característica)", 
-    min_value=1.0, 
-    max_value=1000.0, 
-    value=100.0, 
-    step=10.0,
-    help="Representa el tiempo en el cual el 63.2% de los componentes habrán fallado."
-)
+input_mode = st.sidebar.radio("Modo de Ingreso:", ["Manual", "Cargar Archivo CSV"])
 
-beta = st.sidebar.slider(
-    "Forma ($\\beta$ - Pendiente)", 
-    min_value=0.1, 
-    max_value=5.0, 
-    value=1.5, 
-    step=0.1,
-    help="Determina el comportamiento de la tasa de falla: <1 (infantil), 1 (constante), >1 (desgaste)."
-)
+if input_mode == "Manual":
+    st.sidebar.subheader("Parámetros Teóricos")
+    eta = st.sidebar.slider(
+        "Escala (η - Vida Característica)", 
+        min_value=1.0, 
+        max_value=1000.0, 
+        value=100.0, 
+        step=10.0,
+        help="Representa el tiempo en el cual el 63.2% de los componentes habrán fallado."
+    )
+
+    beta = st.sidebar.slider(
+        "Forma (β - Pendiente)", 
+        min_value=0.1, 
+        max_value=5.0, 
+        value=1.5, 
+        step=0.1,
+        help="Determina el comportamiento de la tasa de falla: <1 (infantil), 1 (constante), >1 (desgaste)."
+    )
+else:
+    st.sidebar.subheader("Ajuste por Datos Empíricos")
+    uploaded_file = st.sidebar.file_uploader("Sube tu archivo (CSV)", type=["csv", "txt"], help="La primera columna debe contener los tiempos de falla.")
+    if uploaded_file is not None:
+        try:
+            df = pd.read_csv(uploaded_file)
+            data = df.iloc[:, 0].dropna().values
+            shape, loc, scale = weibull_min.fit(data, floc=0)
+            beta = shape
+            eta = scale
+            st.sidebar.success(f"¡Ajuste Exitoso!\n\nη estimado = {eta:.2f}\nβ estimado = {beta:.2f}")
+        except Exception as e:
+            st.sidebar.error(f"Error procesando el archivo: {e}")
+            eta, beta = 100.0, 1.5
+    else:
+        st.sidebar.info("Esperando archivo... Usando valores de piso.")
+        eta, beta = 100.0, 1.5
 
 # Time Range
 t_max = eta * 3
